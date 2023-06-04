@@ -27,7 +27,7 @@ docker-compose exec web python manage.py createsuperuser
 ```
 docker-compose run web pytest .
 ```
-The admin application is accessible at http://localhost:8000/admin
+The admin application is accessible at http://localhost:8000/admin. 
 
 Following endpoints are available
 * `POST /api/images` - To upload an image
@@ -35,7 +35,7 @@ Following endpoints are available
 * `GET /api/images/<id>` - To fetch the details of an image by id.
 
 User needs to be logged in to access the images and also subscribed to a plan. The users and plans will be created using the Admin web.
-Fixtures can be added for the default plans
+Fixtures can be added for the default plans. The default rest framework endpoint `api-auth/login/` has been enabled for ease of login.
 The thumbnails are created based on plan asynchronously, using celery and redis.
 
 # Assumptions made:
@@ -46,6 +46,8 @@ The thumbnails are created based on plan asynchronously, using celery and redis.
 * Understand the requirement of expiring link properly and incorporate changes accordingly.
 * Complete unit tests
 * Add fixtures for default plans
+* Caching
+* More Testing
 * Incorporate feedbacks
 * Documentation
 
