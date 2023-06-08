@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.conf import settings
 from rest_framework import serializers
 
@@ -49,6 +51,17 @@ class ImageSerializer(serializers.ModelSerializer):
             return f'{settings.MEDIA_BASE_URL}{obj.image.name}'
         else:
             return None
+
+    def validate_image(self, value):
+        # only png or jpeg files are allowed
+        file_name = value.name
+        extension = Path(file_name).suffix
+        if extension.lower() in ('.png', '.jpeg', '.jpg'):
+            return value
+        else:
+            raise serializers.ValidationError(
+                'Image in JPEG or PNG formats are only allowed.'
+            )
 
 
 class ImageExpiringLinkSerializer(serializers.ModelSerializer):

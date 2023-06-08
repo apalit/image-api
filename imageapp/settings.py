@@ -147,7 +147,9 @@ MEDIA_BASE_URL = os.getenv('MEDIA_BASE_URL', 'http://127.0.0.1:8000/media/')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
 }
 
 EXPIRY_MIN_VALUE = 300
