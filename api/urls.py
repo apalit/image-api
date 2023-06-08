@@ -5,10 +5,6 @@ from api.views import ImageExpiringLinkView, ImageView
 
 router = DefaultRouter()
 router.register(r'images', ImageView, basename='image')
-router.register(
-    r'expiring-links', ImageExpiringLinkView, basename='expiring-link'
-)
+router.register(r'expiring-links', ImageExpiringLinkView, basename='expiring-link')
 
-urlpatterns = [
-    path('', include(router.urls))
-]
+urlpatterns = [path('', include(router.urls))]

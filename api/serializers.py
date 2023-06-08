@@ -31,10 +31,15 @@ class ImageSerializer(serializers.ModelSerializer):
             'create_date_time',
             'thumbnails',
             'image_url',
-            'status'
+            'status',
         )
         read_only_fields = (
-            'id', 'type', 'create_date_time', 'thumbnails', 'image_url', 'status'
+            'id',
+            'type',
+            'create_date_time',
+            'thumbnails',
+            'image_url',
+            'status',
         )
 
     def get_image_url(self, obj):
@@ -60,9 +65,7 @@ class ImageExpiringLinkSerializer(serializers.ModelSerializer):
             'base_image',
             'link_url',
         )
-        read_only_fields = (
-            'id', 'create_date_time', 'expiry_date_time', 'link_url'
-        )
+        read_only_fields = ('id', 'create_date_time', 'expiry_date_time', 'link_url')
 
     def get_link_url(self, obj):
         return f'{settings.MEDIA_BASE_URL}{obj.link_alias}'

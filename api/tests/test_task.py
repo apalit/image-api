@@ -12,6 +12,7 @@ from api.tests.utils import create_image
 @override_settings(CELERY_ALWAYS_EAGER=True, CELERY_EAGER_PROPAGATES_EXCEPTIONS=True)
 def test_create_thumbnail(db, auto_login_user, create_plan):
     from api.models import ImageUpload
+
     client, user = auto_login_user()
     # create plan
     create_plan(user, thumbnail_heights=[100], include_original_image=True)

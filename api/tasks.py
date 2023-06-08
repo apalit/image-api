@@ -35,16 +35,14 @@ def create_thumbnails_task(image_upload_pk):
             output = BytesIO()
             im.save(output, format=im.format)
 
-            thumbnail = Thumbnail(
-                height=height, base_image=image_upload
-            )
+            thumbnail = Thumbnail(height=height, base_image=image_upload)
             thumbnail.thumbnail_image = InMemoryUploadedFile(
                 output,
                 'ImageField',
                 f'{name}-thumb-{height}{extension}',
                 content_type,
                 sys.getsizeof(output),
-                None
+                None,
             )
             thumbnail.save()
     # update status

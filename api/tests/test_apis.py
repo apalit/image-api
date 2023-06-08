@@ -55,9 +55,7 @@ def test_list_image_access_to_original_image(
 
 @override_storage(storage=LocMemStorage())
 @mock.patch('api.tasks.create_thumbnails_task')
-def test_get_image_detail(
-    mock_task, db, auto_login_user, create_plan
-):
+def test_get_image_detail(mock_task, db, auto_login_user, create_plan):
     client, user = auto_login_user()
     # create plan
     create_plan(user, thumbnail_heights=[50], include_original_image=True)
@@ -72,9 +70,7 @@ def test_get_image_detail(
 
 @override_storage(storage=LocMemStorage())
 @mock.patch('api.tasks.create_thumbnails_task')
-def test_create_image(
-    mock_task, db, auto_login_user, create_plan
-):
+def test_create_image(mock_task, db, auto_login_user, create_plan):
     client, user = auto_login_user()
     # create plan
     create_plan(user, thumbnail_heights=[50], include_original_image=True)
@@ -84,23 +80,16 @@ def test_create_image(
     image.save(image_file, 'JPEG')
     image_file.name = 'test1.jpg'
     image_file.seek(0)
-    data = {
-        'name': 'Test image upload',
-        'image': image_file
-    }
+    data = {'name': 'Test image upload', 'image': image_file}
 
-    response = client.post(
-        reverse('image-list'), data, format='multipart/format'
-    )
+    response = client.post(reverse('image-list'), data, format='multipart/format')
     assert response.status_code == 201
     assert response.json()['name'] == 'Test image upload'
 
 
 @override_storage(storage=LocMemStorage())
 @mock.patch('api.tasks.create_thumbnails_task')
-def test_expiry_link_no_access(
-    mock_task, db, auto_login_user, create_plan
-):
+def test_expiry_link_no_access(mock_task, db, auto_login_user, create_plan):
     client, user = auto_login_user()
     # create plan with no right to expiring links
     create_plan(user, thumbnail_heights=[50], include_original_image=True)
@@ -111,19 +100,14 @@ def test_expiry_link_no_access(
     assert response.status_code == 403
 
     # attempt to create an expiring link
-    data = {
-        'expiry_in_seconds': 600,
-        'base_image': image_upload.pk
-    }
+    data = {'expiry_in_seconds': 600, 'base_image': image_upload.pk}
     response = client.post(reverse('expiring-link-list'), data)
     assert response.status_code == 403
 
 
 @override_storage(storage=LocMemStorage())
 @mock.patch('api.tasks.create_thumbnails_task')
-def test_expiry_link_list(
-    mock_task, db, auto_login_user, create_plan
-):
+def test_expiry_link_list(mock_task, db, auto_login_user, create_plan):
     client, user = auto_login_user()
     # create plan with rights to expiring links
     create_plan(
@@ -142,8 +126,7 @@ def test_expiry_link_list(
     # filter by image
     image_upload_id = data[0]['base_image']
     response = client.get(
-        reverse('expiring-link-list'),
-        {'base_image': image_upload_id}
+        reverse('expiring-link-list'), {'base_image': image_upload_id}
     )
     assert response.status_code == 200
     data = response.json()
@@ -152,9 +135,7 @@ def test_expiry_link_list(
 
 @override_storage(storage=LocMemStorage())
 @mock.patch('api.tasks.create_thumbnails_task')
-def test_expiry_link_create(
-    mock_task, db, auto_login_user, create_plan
-):
+def test_expiry_link_create(mock_task, db, auto_login_user, create_plan):
     client, user = auto_login_user()
     # create plan with rights to expiring links
     create_plan(
@@ -164,7 +145,7 @@ def test_expiry_link_create(
     data = {
         'description': 'Expiring link test',
         'expiry_in_seconds': 60000,
-        'base_image': image_upload.pk
+        'base_image': image_upload.pk,
     }
     # attempt to create with expiration period out of range
     response = client.post(reverse('expiring-link-list'), data)
@@ -178,7 +159,7 @@ def test_expiry_link_create(
 
     # retrieve object
     expiring_link_id = response.json()['id']
-    response = client.get(reverse(
-        'expiring-link-detail', kwargs={'pk': expiring_link_id}
-    ))
+    response = client.get(
+        reverse('expiring-link-detail', kwargs={'pk': expiring_link_id})
+    )
     assert response.status_code == 200

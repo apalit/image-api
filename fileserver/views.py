@@ -4,8 +4,7 @@ from pathlib import Path
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.exceptions import (NotFound, PermissionDenied,
-                                       ValidationError)
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,7 +15,10 @@ from fileserver.renderers import JPGRenderer, PNGRenderer
 
 class ImageFileView(APIView):
     permission_classes = (AllowAny,)  # noqa
-    renderer_classes = (JPGRenderer, PNGRenderer,)
+    renderer_classes = (
+        JPGRenderer,
+        PNGRenderer,
+    )
 
     def get(self, *args, **kwargs):
         object_type, image_path = self.parse_path()
@@ -29,16 +31,14 @@ class ImageFileView(APIView):
             raise NotFound
         extension = Path(image.name).suffix.replace('.', '')
         return Response(
-            data=image,
-            content_type=f'image/{extension}',
-            status=status.HTTP_200_OK
+            data=image, content_type=f'image/{extension}', status=status.HTTP_200_OK
         )
 
     def parse_path(self):
         path: str = self.request.path
         match = re.search(
             r'^/media/(imageupload|thumbnail|exp)/[0-9a-f]{32}/[0-9a-f]{32}\.(jpeg|jpg|png)$',  # noqa
-            path
+            path,
         )
         if not match:
             raise ValidationError('The url format is not valid')
@@ -72,6 +72,6 @@ class ImageFileView(APIView):
     def get_expiring_image(self, image_path):
         image_upload = ImageUpload.objects.get(
             image_expiry_links__expiry_date_time__gt=timezone.now(),
-            image_expiry_links__link_alias=image_path
+            image_expiry_links__link_alias=image_path,
         )
         return image_upload.image

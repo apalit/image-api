@@ -12,7 +12,7 @@ def create_expiring_link(image_upload, expiry_in_seconds=300):
     expiring_link = ImageExpiringLink(
         base_image=image_upload,
         expiry_in_seconds=expiry_in_seconds,
-        description=f'link expiring in {expiry_in_seconds} seconds'
+        description=f'link expiring in {expiry_in_seconds} seconds',
     )
     expiring_link.save()
     return expiring_link
@@ -33,17 +33,9 @@ def create_image(user, size=(400, 400), file_name='test.png'):
     image.save(mock_file, extension.replace('.', ''))
     mock_file.name = file_name
     # create ImageUpload
-    image_upload = ImageUpload(
-        name='test image',
-        user=user
-    )
+    image_upload = ImageUpload(name='test image', user=user)
     image_upload.image = InMemoryUploadedFile(
-        mock_file,
-        'ImageField',
-        file_name,
-        content_type,
-        sys.getsizeof(mock_file),
-        None
+        mock_file, 'ImageField', file_name, content_type, sys.getsizeof(mock_file), None
     )
     image_upload.save()
     mock_file.seek(0)
