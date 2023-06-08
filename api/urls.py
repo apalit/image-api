@@ -1,8 +1,14 @@
-from django.urls import path
-from api.views import ImageCreateListView, ImageDetailView
+from django.urls import include, path
+from api.views import ImageView, ImageExpiringLinkView
+from rest_framework.routers import DefaultRouter
 
+
+router = DefaultRouter()
+router.register(r'images', ImageView, basename='image')
+router.register(
+    r'expiring-links', ImageExpiringLinkView, basename='expiring-link'
+)
 
 urlpatterns = [
-    path('images', ImageCreateListView.as_view(), name='images'),
-    path('images/<int:pk>', ImageDetailView.as_view(), name='image-detail')
+    path('', include(router.urls))
 ]

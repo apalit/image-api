@@ -1,87 +1,54 @@
-from django.db.models import Q
-from django.utils import timezone
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from rest_framework import status
-from api.serializers import ImageSerializer
-from api.models import ImageUpload
+from django_filters.rest_framework import DjangoFilterBackend
+from api.permissions import HasPlan, HasExpiringLinkPermissions
+from api.serializers import ImageSerializer, ImageExpiringLinkSerializer
+from api.models import ImageUpload, ImageExpiringLink
 
 
-def get_user_plan(user):
-    if hasattr(user, 'userplan'):
-        user_plan = user.userplan
-    else:
-        raise ValidationError(
-            {'userplan': 'This functionality needs subscription to a plan'}
-        )
-    return user_plan.plan
-
-
-class ImageCreateListView(APIView):
+class ImageView(
+    GenericViewSet, CreateModelMixin, ListModelMixin, RetrieveModelMixin
+):
     parser_classes = (MultiPartParser, FormParser,)
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated, HasPlan,)
     serializer_class = ImageSerializer
 
-    def post(self, request, *args, **kwargs):
-        try:
-            plan = self.get_user_plan()
-        except ValidationError as ve:
-            return Response(ve.detail, status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.serializer_class(data=request.data)
-        serializer.context['include_original_image'] = plan.include_original_image
-        serializer.context['expiring_link'] = plan.expiring_link
-        if serializer.is_valid():
-            serializer.save(user=self.request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_serializer_context(self):
+        print(self.request.data)
+        plan = self.get_user_plan()
+        context = super().get_serializer_context()
+        context['include_original_image'] = plan.include_original_image
+        return context
 
-    def get(self, request, *args, **kwargs):
-        try:
-            plan = self.get_user_plan()
-        except ValidationError as ve:
-            return Response(ve.detail, status=status.HTTP_400_BAD_REQUEST)
-        queryset = self.get_queryset()
-        serializer = self.serializer_class(queryset, many=True)
-        serializer.context['include_original_image'] = plan.include_original_image
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        user = self.request.user
-        queryset = ImageUpload.objects.filter(user=user)
-        # filter on expiry
-        queryset = queryset.filter(
-            Q(expiry_date_time__isnull=True) |
-            Q(expiry_date_time__gt=timezone.now())
-        )
+        queryset = ImageUpload.objects.filter(user=self.request.user)
         return queryset
 
     def get_user_plan(self):
         user = self.request.user
-        # get user plan
-        return get_user_plan(user)
+        if hasattr(user, 'userplan'):
+            user_plan = user.userplan
+        else:
+            raise ValidationError(
+                {'userplan': 'This functionality needs subscription to a plan'}
+            )
+        return user_plan.plan
 
 
-class ImageDetailView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = ImageSerializer
+class ImageExpiringLinkView(ModelViewSet):
+    serializer_class = ImageExpiringLinkSerializer
+    permission_classes = (IsAuthenticated, HasExpiringLinkPermissions,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('base_image',)
 
     def get_queryset(self):
-        user = self.request.user
-        queryset = ImageUpload.objects.filter(user=user)
-        # filter on expiry
-        queryset = queryset.filter(
-            Q(expiry_date_time__isnull=True) |
-            Q(expiry_date_time__gt=timezone.now())
+        # get records for the user
+        return ImageExpiringLink.objects.filter(
+            base_image__user=self.request.user
         )
-        return queryset
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        user_plan = get_user_plan(self.request.user)
-        context['include_original_image'] = user_plan.include_original_image
-        return context

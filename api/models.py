@@ -5,6 +5,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
+from pathlib import Path
 
 
 class Plan(models.Model):
@@ -27,35 +28,33 @@ class UserPlan(models.Model):
 
 
 def user_directory_path(instance, filename):
-    unique_id = uuid.uuid4().hex
-
-    # file will be uploaded to MEDIA_ROOT/userid/uniqueid/<filename>
-    return f'{instance.user.username}/{unique_id}/{filename}'
+    extension = Path(filename).suffix
+    name = instance.__class__.__name__.lower()
+    # file will be uploaded to MEDIA_ROOT/{name}/id/uniqueid/uniqueid.extension
+    return f'{name}/{uuid.uuid4().hex}/{uuid.uuid4().hex}{extension}'
 
 
 class ImageUpload(models.Model):
-
     name = models.CharField(max_length=256)
     description = models.CharField(max_length=1024, null=True, blank=True)
     image = models.ImageField(
         upload_to=user_directory_path,
         validators=[FileExtensionValidator(allowed_extensions=('png', 'jpg'))]
     )
-    expiry = models.IntegerField(null=True, blank=True)
     create_date_time = models.DateTimeField(auto_now_add=True)
-    expiry_date_time = models.DateTimeField(null=True)
+    status = models.CharField(max_length=265, null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        if self.expiry:
-            # set expiry datetime
-            self.expiry_date_time = timezone.now() + timedelta(
-                seconds=self.expiry
-            )
+        create = self._state.adding
+        if create:
+            # set status during create
+            self.status = 'Processing thumbnails'
         super().save(*args, **kwargs)
-        # call create thumbnail task
-        from api.tasks import create_thumbnails_task
-        create_thumbnails_task.delay(self.pk)
+        if create:
+            # call create thumbnail task during create
+            from api.tasks import create_thumbnails_task
+            create_thumbnails_task.delay(self.pk)
 
 
 class Thumbnail(models.Model):
@@ -66,4 +65,28 @@ class Thumbnail(models.Model):
         on_delete=models.CASCADE,
         related_name='thumbnails'
     )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+
+class ImageExpiringLink(models.Model):
+    base_image = models.ForeignKey(
+        ImageUpload,
+        on_delete=models.CASCADE,
+        related_name='image_expiry_links'
+    )
+    description = models.CharField(max_length=1024, null=True, blank=True)
+    create_date_time = models.DateTimeField(auto_now_add=True)
+    expiry_in_seconds = models.IntegerField()
+    expiry_date_time = models.DateTimeField()
+    link_alias = models.CharField(max_length=1024)
+
+    def save(self, *args, **kwargs):
+        # set expiry date time
+        self.expiry_date_time = timezone.now() + timedelta(
+            seconds=self.expiry_in_seconds
+        )
+        # set image link alias as exp/{uuid1}/{uuid2.base image extension}
+        image = self.base_image.image
+        extension = Path(image.name).suffix
+        self.link_alias = \
+            f'exp/{uuid.uuid4().hex}/{uuid.uuid4().hex}{extension}'
+        super().save(*args, **kwargs)

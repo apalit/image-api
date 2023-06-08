@@ -18,23 +18,24 @@ def create_thumbnails_task(image_upload_pk):
     # get user plan
     plan = user.userplan.plan
     thumbnail_heights = plan.thumbnail_heights
-    image_full_name = image_upload.image.name
-    (name, extension) = os.path.splitext(image_full_name)
 
+    base_image = image_upload.image
+    (name, extension) = os.path.splitext(base_image.name)
+    width = base_image.width
     if extension.lower() == '.png':
         content_type = 'image/png'
     else:
         content_type = 'image/jpeg'
 
     for height in thumbnail_heights:
-        size = (height, height)
-        with Image.open(image_upload.image.open()) as im:
+        size = (width, height)
+        with Image.open(base_image.open()) as im:
             im.thumbnail(size, Image.ANTIALIAS)
             output = BytesIO()
             im.save(output, format=im.format)
 
             thumbnail = Thumbnail(
-                user=user, height=height, base_image=image_upload
+                height=height, base_image=image_upload
             )
             thumbnail.thumbnail_image = InMemoryUploadedFile(
                 output,
@@ -45,3 +46,6 @@ def create_thumbnails_task(image_upload_pk):
                 None
             )
             thumbnail.save()
+    # update status
+    image_upload.status = 'Thumbnails created'
+    image_upload.save()

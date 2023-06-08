@@ -1,0 +1,6 @@
+[flake8]
+filename = *.py
+max-complexity = 12
+max-line-length=88
+extend-ignore=E203
+exclude=.git,__pycache__,venv,docker,.pytest_cache,*/migrations/*
