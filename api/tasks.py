@@ -1,9 +1,10 @@
-from celery import shared_task
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from io import BytesIO
-from PIL import Image
 import os
 import sys
+from io import BytesIO
+
+from celery import shared_task
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from PIL import Image
 
 from api.models import ImageUpload, Thumbnail
 

@@ -1,5 +1,7 @@
-import pytest
 import uuid
+
+import pytest
+
 from api.models import Plan, UserPlan
 
 

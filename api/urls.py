@@ -1,7 +1,7 @@
 from django.urls import include, path
-from api.views import ImageView, ImageExpiringLinkView
 from rest_framework.routers import DefaultRouter
 
+from api.views import ImageExpiringLinkView, ImageView
 
 router = DefaultRouter()
 router.register(r'images', ImageView, basename='image')

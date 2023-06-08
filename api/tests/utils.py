@@ -1,9 +1,11 @@
+import sys
+from io import BytesIO
 from pathlib import Path
+
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image
-from io import BytesIO
-import sys
-from api.models import ImageUpload, ImageExpiringLink
+
+from api.models import ImageExpiringLink, ImageUpload
 
 
 def create_expiring_link(image_upload, expiry_in_seconds=300):

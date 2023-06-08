@@ -1,11 +1,12 @@
-from django.urls import reverse
-from unittest import mock
-from override_storage.storage import LocMemStorage
-from override_storage import override_storage
-from PIL import Image
 from io import BytesIO
+from unittest import mock
 
-from api.tests.utils import create_image, create_expiring_link
+from django.urls import reverse
+from override_storage import override_storage
+from override_storage.storage import LocMemStorage
+from PIL import Image
+
+from api.tests.utils import create_expiring_link, create_image
 
 
 def test_list_image_user_no_plan(db, auto_login_user):

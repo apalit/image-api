@@ -1,8 +1,9 @@
 import pytest
-from api.tests.utils import create_image
-from override_storage.storage import LocMemStorage
-from override_storage import override_storage
 from django.test.utils import override_settings
+from override_storage import override_storage
+from override_storage.storage import LocMemStorage
+
+from api.tests.utils import create_image
 
 
 # needs fixing

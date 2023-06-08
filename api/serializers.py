@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from api.models import ImageUpload, Thumbnail, ImageExpiringLink
+from api.models import ImageExpiringLink, ImageUpload, Thumbnail
 
 
 class ThumbnailSerializer(serializers.ModelSerializer):
