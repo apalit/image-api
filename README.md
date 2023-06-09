@@ -46,19 +46,20 @@ Following endpoints are available
 User needs to be logged in to access the image APIs and also subscribed to a plan. 
 The default rest framework endpoint `api-auth/login/` has been enabled for ease of login.
 A fixture has been provided to create the default plans. Additional plans can be added via Admin UI.
-The thumbnails are created based on plan asynchronously, using celery and redis.
+The thumbnails are created based on plan asynchronously, using celery and redis. 
 
 The image urls are of the following format
-- Original/base image - media/imageupload/<uuid 1>/<uuid 2.(png|jpeg)>
-- Thumbnail image - media/thumbnail/<uuid 1>/<uuid 2.(png|jpeg)>
-- Expiry link - media/exp/<uuid 1>/<uuid 2.(png|jpeg)>
+- Original/base image - media/imageupload/<uuid 1>/<uuid 2.(png|jpeg|jpg)>
+- Thumbnail image - media/thumbnail/<uuid 1>/<uuid 2.(png|jpeg|jpg)>
+- Expiry link - media/exp/<uuid 1>/<uuid 2.(png|jpeg|jpg)>
 
 Note that expiry links are just aliases to the actual base image which become unavailable after expiry time.
 
 
 # Further improvements and enhancements
 * Enable caching to cache the images. This can be done using AWS Cloudfront or Django caching framework. Care has to be taken while caching the expiring links.
-* As of now, the list endpoints are paginated. They can also incorporate caching.
+* As of now, the list endpoints are paginated which can be optimised further. They can also incorporate caching.
+* More unit tests can be added.
 * Auto generation of API documentation, say using Swagger. 
 * Can use a different backend to store images, say S3.
 * Automated script or Makefile can be used to run the various commands.
