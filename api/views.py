@@ -12,6 +12,11 @@ from api.serializers import ImageExpiringLinkSerializer, ImageSerializer
 
 
 class ImageView(GenericViewSet, CreateModelMixin, ListModelMixin, RetrieveModelMixin):
+    """
+    This view presents a list of all images uploaded by a user in paginated format
+    and allows user to upload a new image. User should be logged in to access it.
+    They can also view the details of a particular image created by them.
+    """
     parser_classes = (
         MultiPartParser,
         FormParser,
@@ -48,6 +53,14 @@ class ImageView(GenericViewSet, CreateModelMixin, ListModelMixin, RetrieveModelM
 
 
 class ImageExpiringLinkView(ModelViewSet):
+    """
+    This view presents the expiring links created by a user and APIs to manage them.
+    User should have permission to add expiring links to access this feature. User can
+    filter on expiring links of an image by using a filter criteria. For eg,
+    ```
+    /api/expiring-links/?base_image=1
+    ```
+    """
     serializer_class = ImageExpiringLinkSerializer
     permission_classes = (
         IsAuthenticated,

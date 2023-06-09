@@ -14,6 +14,9 @@ from fileserver.renderers import JPGRenderer, PNGRenderer
 
 
 class ImageFileView(APIView):
+    """
+    This view provides the actual image content
+    """
     permission_classes = (AllowAny,)  # noqa
     renderer_classes = (
         JPGRenderer,
