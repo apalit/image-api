@@ -4,7 +4,7 @@ from pathlib import Path
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,10 +23,7 @@ class ImageFileView(APIView):
     def get(self, *args, **kwargs):
         object_type, image_path = self.parse_path()
         try:
-            if object_type == 'exp':
-                image = self.get_expiring_image(image_path)
-            else:
-                image = self.get_authenticated_image(object_type, image_path)
+            image = self.get_image(object_type, image_path)
         except ObjectDoesNotExist:
             raise NotFound
         extension = Path(image.name).suffix.replace('.', '')
@@ -48,25 +45,21 @@ class ImageFileView(APIView):
         object_type = components[0]
         return object_type, path
 
-    def get_authenticated_image(self, object_type, image_path):
-        if self.request.user.is_anonymous:
-            raise PermissionDenied
-        if object_type == 'imageupload':
+    def get_image(self, object_type, image_path):
+        if object_type == 'exp':
+            image = self.get_expiring_image(image_path)
+        elif object_type == 'imageupload':
             image = self.get_base_image(image_path)
         else:
             image = self.get_thumbnail_image(image_path)
         return image
 
     def get_base_image(self, image_path):
-        user = self.request.user
-        image_upload = ImageUpload.objects.get(user=user, image=image_path)
+        image_upload = ImageUpload.objects.get(image=image_path)
         return image_upload.image
 
     def get_thumbnail_image(self, image_path):
-        user = self.request.user
-        thumbnail = Thumbnail.objects.get(
-            base_image__user=user, thumbnail_image=image_path
-        )
+        thumbnail = Thumbnail.objects.get(thumbnail_image=image_path)
         return thumbnail.thumbnail_image
 
     def get_expiring_image(self, image_path):

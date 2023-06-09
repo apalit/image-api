@@ -31,7 +31,7 @@ def test_list_image_no_access_original_image(
 
     response = client.get(reverse('image-list'))
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()['results']
     assert len(data) == 1
     assert data[0]['image_url'] is None
 
@@ -48,7 +48,7 @@ def test_list_image_access_to_original_image(
     create_image(user)
     response = client.get(reverse('image-list'))
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()['results']
     assert len(data) == 1
     assert data[0]['image_url']
 
@@ -120,7 +120,7 @@ def test_expiry_link_list(mock_task, db, auto_login_user, create_plan):
 
     response = client.get(reverse('expiring-link-list'))
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()['results']
     assert len(data) == 2
 
     # filter by image
@@ -129,7 +129,7 @@ def test_expiry_link_list(mock_task, db, auto_login_user, create_plan):
         reverse('expiring-link-list'), {'base_image': image_upload_id}
     )
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()['results']
     assert len(data) == 1
 
 
