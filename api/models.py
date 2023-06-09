@@ -44,6 +44,8 @@ class ImageUpload(models.Model):
 
     def save(self, *args, **kwargs):
         create = self._state.adding
+        # create_thumbnail_task calls back save to update the status
+        # the create flag is being used to avoid infinite loop.
         if create:
             # set status during create
             self.status = 'Processing thumbnails'

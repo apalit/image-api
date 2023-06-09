@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from api.models import ImageExpiringLink, ImageUpload
+from api.pagination import ImageCursorPagination
 from api.permissions import HasExpiringLinkPermissions, HasPlan
 from api.serializers import ImageExpiringLinkSerializer, ImageSerializer
 
@@ -20,9 +21,9 @@ class ImageView(GenericViewSet, CreateModelMixin, ListModelMixin, RetrieveModelM
         HasPlan,
     )
     serializer_class = ImageSerializer
+    pagination_class = ImageCursorPagination
 
     def get_serializer_context(self):
-        print(self.request.data)
         plan = self.get_user_plan()
         context = super().get_serializer_context()
         context['include_original_image'] = plan.include_original_image
